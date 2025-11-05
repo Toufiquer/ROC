@@ -5,10 +5,10 @@ export const metadata = {
   description: 'Analyze cryptocurrency CSV data with powerful charts and statistics',
 };
 
-export default function CryptoAppLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return <CryptoLayout>{children}</CryptoLayout>;
+export default function CryptoAppLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <CryptoLayout>
+      <div className="w-full pt-[65px]">{children}</div>
+    </CryptoLayout>
+  );
 }
