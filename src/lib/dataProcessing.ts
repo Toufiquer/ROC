@@ -84,6 +84,20 @@ export function aggregateByPeriod(
   const groups = groupByPeriod(sorted, period);
 
   return groups.map((group) => {
+    if (group.length === 0) {
+      return {
+        period: '',
+        startDate: new Date(),
+        endDate: new Date(),
+        avgPrice: 0,
+        minPrice: 0,
+        maxPrice: 0,
+        avgDifferencePercent: 0,
+        totalVolume: 0,
+        dataPoints: 0,
+      };
+    }
+
     const prices = group.map((e) => e.price);
     const volumes = group.map((e) => e.volume);
     const differencePercents = group.map((e) => e.differencePercent);
@@ -231,8 +245,10 @@ export function calculateGlobalStats(currencies: CurrencyDataset[]): GlobalStats
   let allDates: Date[] = [];
 
   currencies.forEach((currency) => {
-    totalEntries += currency.data.length;
-    allDates = allDates.concat(currency.data.map((e) => e.date));
+    if (currency.data && Array.isArray(currency.data)) {
+      totalEntries += currency.data.length;
+      allDates = allDates.concat(currency.data.map((e) => e.date));
+    }
   });
 
   // Estimate data size in bytes

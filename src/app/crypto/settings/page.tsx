@@ -38,6 +38,7 @@ import {
   AlertCircle,
   CheckCircle2,
   Plus,
+  Database,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -235,7 +236,9 @@ export default function SettingsPage() {
           </TabsList>
 
           {currencies.map((currency) => {
-            const summary = calculateSummary(currency.data);
+            const summary = calculateSummary(
+              currency.data && Array.isArray(currency.data) ? currency.data : []
+            );
 
             return (
               <TabsContent key={currency.id} value={currency.name} className="space-y-6">
@@ -271,7 +274,9 @@ export default function SettingsPage() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
                       <p className="text-sm text-gray-600">Total Entries</p>
-                      <p className="text-2xl font-bold">{currency.data.length}</p>
+                      <p className="text-2xl font-bold">
+                        {currency.data?.length || 0}
+                      </p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-600">Date Range</p>
@@ -328,30 +333,37 @@ export default function SettingsPage() {
                 {/* Sample Data Preview */}
                 <div className="bg-white rounded-lg border border-gray-200 p-6">
                   <h3 className="text-lg font-semibold mb-4">Data Preview (First 5 Entries)</h3>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b">
-                          <th className="text-left py-2 px-3">Date</th>
-                          <th className="text-right py-2 px-3">Price</th>
-                          <th className="text-right py-2 px-3">High</th>
-                          <th className="text-right py-2 px-3">Low</th>
-                          <th className="text-right py-2 px-3">Diff %</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {currency.data.slice(0, 5).map((entry, index) => (
-                          <tr key={index} className="border-b last:border-b-0">
-                            <td className="py-2 px-3">{entry.date.toLocaleDateString()}</td>
-                            <td className="text-right py-2 px-3">${entry.price.toFixed(4)}</td>
-                            <td className="text-right py-2 px-3">${entry.high.toFixed(4)}</td>
-                            <td className="text-right py-2 px-3">${entry.low.toFixed(4)}</td>
-                            <td className="text-right py-2 px-3">{entry.differencePercent.toFixed(2)}%</td>
+                  {currency.data && currency.data.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left py-2 px-3">Date</th>
+                            <th className="text-right py-2 px-3">Price</th>
+                            <th className="text-right py-2 px-3">High</th>
+                            <th className="text-right py-2 px-3">Low</th>
+                            <th className="text-right py-2 px-3">Diff %</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                        </thead>
+                        <tbody>
+                          {currency.data.slice(0, 5).map((entry, index) => (
+                            <tr key={index} className="border-b last:border-b-0">
+                              <td className="py-2 px-3">{entry.date.toLocaleDateString()}</td>
+                              <td className="text-right py-2 px-3">${entry.price.toFixed(4)}</td>
+                              <td className="text-right py-2 px-3">${entry.high.toFixed(4)}</td>
+                              <td className="text-right py-2 px-3">${entry.low.toFixed(4)}</td>
+                              <td className="text-right py-2 px-3">{entry.differencePercent.toFixed(2)}%</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Database className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                      <p className="text-gray-600">No data entries available</p>
+                    </div>
+                  )}
                 </div>
               </TabsContent>
             );

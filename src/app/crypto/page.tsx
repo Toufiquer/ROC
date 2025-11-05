@@ -146,13 +146,17 @@ export default function CryptoHomePage() {
                   <div className="flex justify-between">
                     <span>Start Date:</span>
                     <span className="font-medium">
-                      {currency.data[0]?.date.toLocaleDateString()}
+                      {currency.data?.length > 0
+                        ? currency.data[0].date.toLocaleDateString()
+                        : 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>End Date:</span>
                     <span className="font-medium">
-                      {currency.data[currency.data.length - 1]?.date.toLocaleDateString()}
+                      {currency.data?.length > 0
+                        ? currency.data[currency.data.length - 1].date.toLocaleDateString()
+                        : 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between">

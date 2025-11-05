@@ -58,7 +58,7 @@ export const useFinanceStore = create<FinanceStore>()(
       storage: createJSONStorage(() => localStorage),
       // Custom serialization to handle Date objects
       onRehydrateStorage: () => (state) => {
-        if (state) {
+        if (state && state.configs && Array.isArray(state.configs)) {
           // Convert date strings back to Date objects after rehydration
           state.configs = state.configs.map((config) => ({
             ...config,

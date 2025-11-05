@@ -76,16 +76,19 @@ export const useCurrencyStore = create<CurrencyStore>()(
       // Custom serialization to handle Date objects
       partialize: (state) => ({ currencies: state.currencies }),
       onRehydrateStorage: () => (state) => {
-        if (state) {
+        if (state && state.currencies && Array.isArray(state.currencies)) {
           // Convert date strings back to Date objects after rehydration
           state.currencies = state.currencies.map((currency) => ({
             ...currency,
             createdAt: new Date(currency.createdAt),
             updatedAt: new Date(currency.updatedAt),
-            data: currency.data.map((entry) => ({
-              ...entry,
-              date: new Date(entry.date),
-            })),
+            data:
+              currency.data && Array.isArray(currency.data)
+                ? currency.data.map((entry) => ({
+                    ...entry,
+                    date: new Date(entry.date),
+                  }))
+                : [],
           }));
         }
       },
