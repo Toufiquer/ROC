@@ -1,18 +1,13 @@
 /*
 |-----------------------------------------
-| setting up Page for the App
+| Root Page - Redirects to Crypto App
 | @author: Toufiquer Rahman<toufiquer.0@gmail.com>
 | @copyright: webapp, August, 2025
 |-----------------------------------------
 */
 
-import ComingSoon from '@/components/common/ComingSoon';
+import { redirect } from 'next/navigation';
 
 export default function Home() {
-  return (
-    <>
-      <div className="mt-[-65px] " />
-      <ComingSoon />
-    </>
-  );
+  redirect('/crypto');
 }

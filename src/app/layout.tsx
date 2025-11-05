@@ -1,9 +1,8 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
-import { ReduxProvider } from '@/redux/provider';
 import { ToastContainer } from 'react-toastify';
-import MenuComponentWithSession from '@/components/common/MenuWithSession';
+import 'react-toastify/dist/ReactToastify.css';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -16,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Tec Verse - App Generator',
-  description: 'For Faster Development',
+  title: 'Crypto CSV Analyzer',
+  description: 'Analyze and manage your cryptocurrency portfolio with CSV import',
   manifest: '/manifest.json',
   icons: {
     apple: '/icons/icon-192x192.png',
@@ -32,11 +31,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <ReduxProvider>
-          <MenuComponentWithSession />
-          <div>{children}</div>
-        </ReduxProvider>
-        <ToastContainer style={{ top: '65px' }} />
+        <div>{children}</div>
+        <ToastContainer style={{ top: '20px' }} />
       </body>
     </html>
   );
