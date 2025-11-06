@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import CryptoLayout from '@/components/crypto/CryptoLayout';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -31,7 +32,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <div>{children}</div>
+        <CryptoLayout>
+          <div className="w-full pt-[65px]">{children}</div>
+        </CryptoLayout>
         <ToastContainer style={{ top: '20px' }} />
       </body>
     </html>

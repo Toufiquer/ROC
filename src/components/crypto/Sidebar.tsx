@@ -12,25 +12,25 @@ import { cn } from '@/lib/utils';
 const navItems = [
   {
     name: 'Home',
-    path: '/crypto',
+    path: '/',
     icon: Home,
     description: 'Overview & Stats',
   },
   {
     name: 'Finance',
-    path: '/crypto/finance',
+    path: '/finance',
     icon: TrendingUp,
     description: 'Financial Strategies',
   },
   {
     name: 'Summary',
-    path: '/crypto/summary',
+    path: '/summary',
     icon: BarChart3,
     description: 'Data Analysis',
   },
   {
     name: 'Settings',
-    path: '/crypto/settings',
+    path: '/settings',
     icon: Settings,
     description: 'Import & Manage',
   },
@@ -52,7 +52,7 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-1">
-        {navItems.map((item) => {
+        {navItems.map(item => {
           const Icon = item.icon;
           const isActive = pathname === item.path || pathname?.startsWith(item.path + '/');
 
@@ -62,9 +62,7 @@ export default function Sidebar() {
               href={item.path}
               className={cn(
                 'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors',
-                isActive
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                isActive ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white',
               )}
             >
               <Icon className="w-5 h-5 flex-shrink-0" />
