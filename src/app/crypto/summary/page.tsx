@@ -36,13 +36,16 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { Database, TrendingDown, TrendingUp, Calendar } from 'lucide-react';
+import { Database, TrendingDown, TrendingUp, Calendar, Filter } from 'lucide-react';
+
+type DifferenceFilter = 'all' | 'maximum' | 'minimum';
 
 export default function SummaryPage() {
   const [mounted, setMounted] = useState(false);
   const [selectedCurrency, setSelectedCurrency] = useState<string>('');
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('daily');
   const [dateRangePreset, setDateRangePreset] = useState('All Time');
+  const [differenceFilter, setDifferenceFilter] = useState<DifferenceFilter>('all');
 
   const currencies = useCurrencyStore((state) => state.currencies);
 
@@ -63,10 +66,12 @@ export default function SummaryPage() {
   const dateRangePresets = useMemo(() => getDateRangePresets(), []);
 
   const filteredData = useMemo(() => {
-    if (!currentCurrency) return [];
+    if (!currentCurrency || !currentCurrency.data || !Array.isArray(currentCurrency.data)) {
+      return [];
+    }
 
     const preset = dateRangePresets[dateRangePreset as keyof typeof dateRangePresets];
-    if (!preset) return currentCurrency.data;
+    if (!preset) return currentCurrency.data || [];
 
     return filterByDateRange(currentCurrency.data, preset);
   }, [currentCurrency, dateRangePreset, dateRangePresets]);
@@ -80,8 +85,33 @@ export default function SummaryPage() {
   }, [filteredData, timePeriod]);
 
   const chartData = useMemo(() => {
-    return prepareChartData(filteredData);
-  }, [filteredData]);
+    const baseChartData = prepareChartData(filteredData);
+
+    // Apply difference filter for monthly and yearly views
+    if (differenceFilter === 'all') {
+      return baseChartData;
+    }
+
+    // Determine the limit based on time period
+    let limit = baseChartData.length;
+    if (timePeriod === 'yearly') {
+      limit = 20;
+    } else if (timePeriod === 'monthly') {
+      limit = 5;
+    }
+
+    // Sort by differencePercent
+    const sortedData = [...baseChartData].sort((a, b) => {
+      if (differenceFilter === 'maximum') {
+        return b.differencePercent - a.differencePercent; // Descending
+      } else {
+        return a.differencePercent - b.differencePercent; // Ascending
+      }
+    });
+
+    // Return limited data
+    return sortedData.slice(0, limit);
+  }, [filteredData, differenceFilter, timePeriod]);
 
   if (!mounted) {
     return (
@@ -150,11 +180,63 @@ export default function SummaryPage() {
               ))}
             </SelectContent>
           </Select>
+
+          {/* Difference Filter */}
+          <Select value={differenceFilter} onValueChange={(v) => setDifferenceFilter(v as DifferenceFilter)}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Filter data" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Data</SelectItem>
+              <SelectItem value="maximum">
+                Maximum {timePeriod === 'yearly' ? '20' : timePeriod === 'monthly' ? '5' : 'All'}
+              </SelectItem>
+              <SelectItem value="minimum">
+                Minimum {timePeriod === 'yearly' ? '20' : timePeriod === 'monthly' ? '5' : 'All'}
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
+      {/* No Data State */}
+      {currentCurrency && filteredData.length === 0 && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+          <Database className="w-12 h-12 text-yellow-600 mx-auto mb-3" />
+          <h3 className="text-lg font-semibold text-yellow-900 mb-2">
+            No Data Available for Selected Filters
+          </h3>
+          <p className="text-yellow-800">
+            Try adjusting your date range filter or select a different currency.
+          </p>
+        </div>
+      )}
+
+      {/* Filter Info Banner */}
+      {currentCurrency && filteredData.length > 0 && differenceFilter !== 'all' && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
+          <Filter className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <h3 className="font-semibold text-blue-900 mb-1">
+              {differenceFilter === 'maximum' ? 'Maximum' : 'Minimum'} Difference Filter Active
+            </h3>
+            <p className="text-sm text-blue-800">
+              {timePeriod === 'yearly' && (
+                <>Showing top {differenceFilter === 'maximum' ? '20' : '20'} entries with {differenceFilter === 'maximum' ? 'highest' : 'lowest'} difference percentage</>
+              )}
+              {timePeriod === 'monthly' && (
+                <>Showing top {differenceFilter === 'maximum' ? '5' : '5'} entries with {differenceFilter === 'maximum' ? 'highest' : 'lowest'} difference percentage</>
+              )}
+              {timePeriod !== 'yearly' && timePeriod !== 'monthly' && (
+                <>Filtering shows entries with {differenceFilter === 'maximum' ? 'highest' : 'lowest'} difference percentage</>
+              )}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Summary Stats */}
-      {currentCurrency && (
+      {currentCurrency && filteredData.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-2">
@@ -203,15 +285,16 @@ export default function SummaryPage() {
       )}
 
       {/* Time Period Tabs */}
-      <Tabs value={timePeriod} onValueChange={(v) => setTimePeriod(v as TimePeriod)}>
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="daily">Daily</TabsTrigger>
-          <TabsTrigger value="weekly">Weekly</TabsTrigger>
-          <TabsTrigger value="monthly">Monthly</TabsTrigger>
-          <TabsTrigger value="yearly">Yearly</TabsTrigger>
-        </TabsList>
+      {currentCurrency && filteredData.length > 0 && (
+        <Tabs value={timePeriod} onValueChange={(v) => setTimePeriod(v as TimePeriod)}>
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="daily">Daily</TabsTrigger>
+            <TabsTrigger value="weekly">Weekly</TabsTrigger>
+            <TabsTrigger value="monthly">Monthly</TabsTrigger>
+            <TabsTrigger value="yearly">Yearly</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value={timePeriod} className="space-y-6">
+          <TabsContent value={timePeriod} className="space-y-6">
           {/* Price Chart */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <h3 className="text-lg font-semibold mb-4">Price Trend</h3>
@@ -328,6 +411,7 @@ export default function SummaryPage() {
           )}
         </TabsContent>
       </Tabs>
+      )}
     </div>
   );
 }
