@@ -15,10 +15,8 @@ export function parseCSV(csvText: string): CsvRow[] {
     throw new Error('CSV file must contain at least a header row and one data row');
   }
 
-  // Parse header
   const header = parseCSVLine(lines[0]);
 
-  // Validate required columns
   const requiredColumns = ['Date', 'Price', 'Open', 'High', 'Low', 'Vol.', 'Change %'];
   const missingColumns = requiredColumns.filter(col => !header.includes(col));
 
@@ -26,19 +24,29 @@ export function parseCSV(csvText: string): CsvRow[] {
     throw new Error(`Missing required columns: ${missingColumns.join(', ')}`);
   }
 
-  // Parse data rows
   const rows: CsvRow[] = [];
   for (let i = 1; i < lines.length; i++) {
-    if (!lines[i].trim()) continue; // Skip empty lines
+    if (!lines[i].trim()) continue;
 
     const values = parseCSVLine(lines[i]);
-    const row: any = {};
+    const rowRecord: Record<string, string> = {};
 
     header.forEach((col, index) => {
-      row[col] = values[index] || '';
+      rowRecord[col] = values[index] || '';
     });
 
-    rows.push(row as CsvRow);
+    // Build a properly typed CsvRow instead of casting a generic record.
+    const csvRow: CsvRow = {
+      Date: rowRecord['Date'] || '',
+      Price: rowRecord['Price'] || '',
+      Open: rowRecord['Open'] || '',
+      High: rowRecord['High'] || '',
+      Low: rowRecord['Low'] || '',
+      'Vol.': rowRecord['Vol.'] || '',
+      'Change %': rowRecord['Change %'] || '',
+    };
+
+    rows.push(csvRow);
   }
 
   return rows;
@@ -74,7 +82,6 @@ function parseCSVLine(line: string): string[] {
  * Supports formats: MM/DD/YYYY, DD/MM/YYYY, YYYY-MM-DD
  */
 export function parseDate(dateStr: string): Date {
-  // Try MM/DD/YYYY format first
   const parts = dateStr.split('/');
   if (parts.length === 3) {
     const month = parseInt(parts[0], 10);
@@ -86,7 +93,6 @@ export function parseDate(dateStr: string): Date {
     }
   }
 
-  // Try YYYY-MM-DD format
   const isoDate = new Date(dateStr);
   if (!isNaN(isoDate.getTime())) {
     return isoDate;
@@ -185,24 +191,17 @@ export function validateDataEntries(entries: CurrencyDataEntry[]): { valid: bool
     return { valid: false, errors };
   }
 
-  // Check for invalid dates
   const invalidDates = entries.filter(entry => isNaN(entry.date.getTime()));
   if (invalidDates.length > 0) {
     errors.push(`Found ${invalidDates.length} entries with invalid dates`);
   }
 
-  // Check for negative prices
-  const negativePrices = entries.filter(entry =>
-    entry.price < 0 || entry.open < 0 || entry.high < 0 || entry.low < 0
-  );
+  const negativePrices = entries.filter(entry => entry.price < 0 || entry.open < 0 || entry.high < 0 || entry.low < 0);
   if (negativePrices.length > 0) {
     errors.push(`Found ${negativePrices.length} entries with negative prices`);
   }
 
-  // Check for illogical price relationships
-  const illogicalPrices = entries.filter(entry =>
-    entry.high < entry.low || entry.high < entry.open || entry.high < entry.price
-  );
+  const illogicalPrices = entries.filter(entry => entry.high < entry.low || entry.high < entry.open || entry.high < entry.price);
   if (illogicalPrices.length > 0) {
     errors.push(`Found ${illogicalPrices.length} entries with illogical price relationships (high < low)`);
   }
@@ -216,27 +215,18 @@ export function validateDataEntries(entries: CurrencyDataEntry[]): { valid: bool
 /**
  * Main function to parse and validate CSV file
  */
-export function parseCurrencyCSV(
-  csvText: string,
-  currencyName: string
-): CurrencyDataset {
+export function parseCurrencyCSV(csvText: string, currencyName: string): CurrencyDataset {
   try {
-    // Parse CSV
     const rows = parseCSV(csvText);
-
-    // Convert to data entries
     const entries = csvRowsToDataEntries(rows);
-
-    // Validate
     const validation = validateDataEntries(entries);
+
     if (!validation.valid) {
       throw new Error(`Validation failed: ${validation.errors.join(', ')}`);
     }
 
-    // Sort by date (oldest first)
     entries.sort((a, b) => a.date.getTime() - b.date.getTime());
 
-    // Create dataset
     const dataset: CurrencyDataset = {
       id: `${currencyName.toLowerCase()}_${Date.now()}`,
       name: currencyName.toUpperCase(),
@@ -260,9 +250,7 @@ export function exportToCSV(entries: CurrencyDataEntry[]): string {
 
   entries.forEach(entry => {
     const dateStr = entry.date.toLocaleDateString('en-US');
-    const volume = entry.volume >= 1_000_000_000
-      ? `${(entry.volume / 1_000_000_000).toFixed(2)}B`
-      : `${(entry.volume / 1_000_000).toFixed(2)}M`;
+    const volume = entry.volume >= 1_000_000_000 ? `${(entry.volume / 1_000_000_000).toFixed(2)}B` : `${(entry.volume / 1_000_000).toFixed(2)}M`;
 
     const row = [
       dateStr,

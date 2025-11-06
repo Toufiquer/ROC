@@ -9,14 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,16 +23,7 @@ import {
 import { useCurrencyStore } from '@/store/useCurrencyStore';
 import { parseCurrencyCSV, getSampleCSV } from '@/lib/csvParser';
 import { calculateSummary } from '@/lib/dataProcessing';
-import {
-  Upload,
-  Download,
-  Trash2,
-  FileText,
-  AlertCircle,
-  CheckCircle2,
-  Plus,
-  Database,
-} from 'lucide-react';
+import { Upload, Download, Trash2, AlertCircle, Plus, Database } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function SettingsPage() {
@@ -52,10 +36,10 @@ export default function SettingsPage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const currencies = useCurrencyStore((state) => state.currencies);
-  const addCurrency = useCurrencyStore((state) => state.addCurrency);
-  const removeCurrency = useCurrencyStore((state) => state.removeCurrency);
-  const clearAll = useCurrencyStore((state) => state.clearAll);
+  const currencies = useCurrencyStore(state => state.currencies);
+  const addCurrency = useCurrencyStore(state => state.addCurrency);
+  const removeCurrency = useCurrencyStore(state => state.removeCurrency);
+  const clearAll = useCurrencyStore(state => state.clearAll);
 
   useEffect(() => {
     setMounted(true);
@@ -120,7 +104,7 @@ export default function SettingsPage() {
       setDeletingId(null);
 
       // Update selected tab
-      const remaining = currencies.filter((c) => c.id !== deletingId);
+      const remaining = currencies.filter(c => c.id !== deletingId);
       if (remaining.length > 0) {
         setSelectedTab(remaining[0].name);
       } else {
@@ -168,9 +152,7 @@ export default function SettingsPage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">Settings</h1>
-          <p className="text-gray-600 mt-1">
-            Import and manage your cryptocurrency CSV data
-          </p>
+          <p className="text-gray-600 mt-1">Import and manage your cryptocurrency CSV data</p>
         </div>
 
         <div className="flex flex-wrap gap-3">
@@ -197,8 +179,7 @@ export default function SettingsPage() {
         <div className="flex-1">
           <h3 className="font-semibold text-blue-900 mb-1">CSV Format Requirements</h3>
           <p className="text-sm text-blue-800">
-            Your CSV must include columns: Date, Price, Open, High, Low, Vol., Change %.
-            Download the sample CSV to see the exact format.
+            Your CSV must include columns: Date, Price, Open, High, Low, Vol., Change %. Download the sample CSV to see the exact format.
           </p>
         </div>
       </div>
@@ -207,12 +188,9 @@ export default function SettingsPage() {
       {currencies.length === 0 ? (
         <div className="bg-white rounded-lg border-2 border-dashed border-gray-300 p-12 text-center">
           <Upload className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            No Currency Data
-          </h3>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">No Currency Data</h3>
           <p className="text-gray-600 mb-6 max-w-md mx-auto">
-            Upload your first CSV file to start analyzing cryptocurrency data.
-            You can import data for BTC, ETH, or any other currency.
+            Upload your first CSV file to start analyzing cryptocurrency data. You can import data for BTC, ETH, or any other currency.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button onClick={() => handleUploadClick()} size="lg">
@@ -228,17 +206,15 @@ export default function SettingsPage() {
       ) : (
         <Tabs value={selectedTab} onValueChange={setSelectedTab}>
           <TabsList className="w-full justify-start overflow-x-auto">
-            {currencies.map((currency) => (
+            {currencies.map(currency => (
               <TabsTrigger key={currency.id} value={currency.name}>
                 {currency.name}
               </TabsTrigger>
             ))}
           </TabsList>
 
-          {currencies.map((currency) => {
-            const summary = calculateSummary(
-              currency.data && Array.isArray(currency.data) ? currency.data : []
-            );
+          {currencies.map(currency => {
+            const summary = calculateSummary(currency.data && Array.isArray(currency.data) ? currency.data : []);
 
             return (
               <TabsContent key={currency.id} value={currency.name} className="space-y-6">
@@ -247,24 +223,14 @@ export default function SettingsPage() {
                   <div className="flex items-start justify-between mb-4">
                     <div>
                       <h2 className="text-2xl font-bold">{currency.name}</h2>
-                      <p className="text-sm text-gray-500 mt-1">
-                        Last updated: {currency.updatedAt.toLocaleString()}
-                      </p>
+                      <p className="text-sm text-gray-500 mt-1">Last updated: {currency.updatedAt.toLocaleString()}</p>
                     </div>
                     <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleUploadClick(currency.name)}
-                      >
+                      <Button variant="outline" size="sm" onClick={() => handleUploadClick(currency.name)}>
                         <Upload className="w-4 h-4 mr-2" />
                         Update
                       </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDelete(currency.id)}
-                      >
+                      <Button variant="destructive" size="sm" onClick={() => handleDelete(currency.id)}>
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
@@ -274,9 +240,7 @@ export default function SettingsPage() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
                       <p className="text-sm text-gray-600">Total Entries</p>
-                      <p className="text-2xl font-bold">
-                        {currency.data?.length || 0}
-                      </p>
+                      <p className="text-2xl font-bold">{currency.data?.length || 0}</p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-600">Date Range</p>
@@ -376,38 +340,20 @@ export default function SettingsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Upload CSV Data</DialogTitle>
-            <DialogDescription>
-              Import financial data for a cryptocurrency
-            </DialogDescription>
+            <DialogDescription>Import financial data for a cryptocurrency</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="currencyName">Currency Name</Label>
-              <Input
-                id="currencyName"
-                placeholder="e.g., BTC, ETH, ADA"
-                value={currencyName}
-                onChange={(e) => setCurrencyName(e.target.value)}
-              />
-              <p className="text-xs text-gray-500">
-                If currency exists, it will be updated with new data
-              </p>
+              <Input id="currencyName" placeholder="e.g., BTC, ETH, ADA" value={currencyName} onChange={e => setCurrencyName(e.target.value)} />
+              <p className="text-xs text-gray-500">If currency exists, it will be updated with new data</p>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="csvFile">CSV File</Label>
-              <Input
-                id="csvFile"
-                type="file"
-                accept=".csv"
-                ref={fileInputRef}
-                onChange={handleFileSelect}
-                disabled={uploading}
-              />
-              <p className="text-xs text-gray-500">
-                Must include: Date, Price, Open, High, Low, Vol., Change %
-              </p>
+              <Input id="csvFile" type="file" accept=".csv" ref={fileInputRef} onChange={handleFileSelect} disabled={uploading} />
+              <p className="text-xs text-gray-500">Must include: Date, Price, Open, High, Low, Vol., Change %</p>
             </div>
 
             {uploading && (
@@ -432,8 +378,7 @@ export default function SettingsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Currency Data?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete all data
-              for this currency from your local storage.
+              This action cannot be undone. This will permanently delete all data for this currency from your local storage.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
